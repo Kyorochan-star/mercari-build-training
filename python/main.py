@@ -1,12 +1,14 @@
 import os
 import logging
 import pathlib
+import json
 from fastapi import FastAPI, Form, HTTPException, Depends
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
+from typing import List
 
 
 # Define the path to the images & sqlite3 database
@@ -67,16 +69,46 @@ class AddItemResponse(BaseModel):
 
 # add_item is a handler to add a new item for POST /items .
 @app.post("/items", response_model=AddItemResponse)
-def add_item(
+async def add_item(
     name: str = Form(...),
+    category: str =Form(...),
+    image: UploadFile = File(...),
     db: sqlite3.Connection = Depends(get_db),
 ):
-    if not name:
-        raise HTTPException(status_code=400, detail="name is required")
 
-    insert_item(Item(name=name))
-    return AddItemResponse(**{"message": f"item received: {name}"})
+    # 画像をSHA-256でハッシュ化して保存
+    image_bytes = await image.read()  # 画像データを読み込む
+    sha256_hash = hashlib.sha256(image_bytes).hexdigest()  # SHA-256ハッシュ化
+    image_filename = f"{sha256_hash}.jpg"  # ハッシュ値をファイル名にして.jpg拡張子を追加
 
+    # 画像をimagesディレクトリに保存
+    image_path = Path("images") / image_filename
+    with open(image_path, "wb") as f:
+        f.write(image_bytes)
+
+    if not name or not category:
+        raise HTTPException(status_code=400, detail="Both name and category are required")
+
+    item = Item(name=name, category=category,image_name=image_filename)
+    insert_item(item)
+
+    return AddItemResponse(**{"message": f"item received: {name}, category: {category}, image name:{item.image_name}"})
+
+
+
+
+@app.get("/items",response_model=AddItemResponse)
+async def get_items():
+    ITEMS_FILE = "items.json"
+    
+    # JSONファイルを読み込む
+    try:
+        with open(ITEMS_FILE, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="No items found")
+    
+    return {"items": data["items"]}
 
 # get_image is a handler to return an image for GET /images/{filename} .
 @app.get("/image/{image_name}")
@@ -93,11 +125,42 @@ async def get_image(image_name):
 
     return FileResponse(image)
 
+# 商品詳細情報を取得するエンドポイント
+@app.get("/items/{item_id}")
+async def get_item(item_id: int):
+    items = get_items_from_file()  # 商品一覧を取得
+
+    # item_idが範囲外の場合
+    if item_id < 1 or item_id > len(items):
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    # item_id番目の商品情報を返す
+    item = items[item_id - 1]  # インデックスは0から始まるので1を引いて取得
+    return item
 
 class Item(BaseModel):
     name: str
+    category: str
+    image_name: str = None # 画像のファイル名（オプション）
 
 
 def insert_item(item: Item):
     # STEP 4-2: add an implementation to store an item
-    pass
+    ITEMS_FILE="items.json"
+
+    # JSONファイルを読み込む
+    try:
+        with open(ITEMS_FILE, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        # ファイルがない場合は新しく作成
+        data = {"items": []}
+    
+    # 新しいアイテムを追加
+    new_item = {"name": item.name, "category": item.category, "image_name": item.image_name}
+    data["items"].append(new_item)
+    
+    # ファイルに保存
+    with open(ITEMS_FILE, "w") as f:
+        json.dump(data, f, indent=4)
+
