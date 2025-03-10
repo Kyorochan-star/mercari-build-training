@@ -2,7 +2,9 @@ import os
 import logging
 import pathlib
 import json
-from fastapi import FastAPI, Form, HTTPException, File, UploadFile
+import hashlib
+from pathlib import Path
+from fastapi import FastAPI, Form, HTTPException, File, UploadFile, Depends
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
@@ -65,6 +67,7 @@ def hello():
 
 class AddItemResponse(BaseModel):
     message: str
+    items: List[dict]  # itemsのリストを追加
 
 
 # add_item is a handler to add a new item for POST /items .
@@ -81,19 +84,27 @@ async def add_item(
     sha256_hash = hashlib.sha256(image_bytes).hexdigest()  # SHA-256ハッシュ化
     image_filename = f"{sha256_hash}.jpg"  # ハッシュ値をファイル名にして.jpg拡張子を追加
 
-    # 画像をimagesディレクトリに保存
-    image_path = Path("images") / image_filename
+    # 画像を保存するディレクトリを確認、なければ作成
+    image_dir = Path("images")
+    if not image_dir.exists():
+        image_dir.mkdir(parents=True)
+
+    # 画像保存パス
+    image_path = image_dir / image_filename
+
+    # 画像ファイルを保存
     with open(image_path, "wb") as f:
         f.write(image_bytes)
 
+    # 入力チェック
     if not name or not category:
         raise HTTPException(status_code=400, detail="Both name and category are required")
 
-    item = Item(name=name, category=category,image_name=image_filename)
-    insert_item(item)
+    # アイテムの作成
+    item = Item(name=name, category=category, image_name=image_filename)
+    insert_item(item)  # アイテムを保存
 
-    return AddItemResponse(**{"message": f"item received: {name}, category: {category}, image name:{item.image_name}"})
-
+    return AddItemResponse(**{"message": f"item received: name: {name}, category: {category}, image name: {item.image_name}"})
 
 
 
@@ -108,7 +119,7 @@ async def get_items():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="No items found")
     
-    return {"items": data["items"]}
+    return AddItemResponse(message="Items fetched successfully", items=data["items"])
 
 # get_image is a handler to return an image for GET /images/{filename} .
 @app.get("/image/{image_name}")
@@ -124,6 +135,18 @@ async def get_image(image_name):
         image = images / "default.jpg"
 
     return FileResponse(image)
+
+def get_items_from_file():
+    ITEMS_FILE = "items.json"
+    
+    # JSONファイルを読み込む
+    try:
+        with open(ITEMS_FILE, "r") as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="No items found")
+    
+    return data["items"]
 
 # 商品詳細情報を取得するエンドポイント
 @app.get("/items/{item_id}")
