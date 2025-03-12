@@ -137,13 +137,6 @@ async def add_item(
         f.write(image_bytes)
 
     
-    '''
-    # アイテムの作成
-    item = Item(name=name, category=category, image_name=image_filename)
-    insert_item(item)  # アイテムを保存
-
-    return AddItemResponse(**{"message": f"item received: name: {name}, category: {category}, image name: {item.image_name}"})
-    '''
 
     cur = db.cursor()
 
@@ -201,19 +194,6 @@ async def get_image(image_name):
 
     return FileResponse(image)
 
-'''
-def get_items_from_file():
-    ITEMS_FILE = "items.json"
-    
-    # JSONファイルを読み込む
-    try:
-        with open(ITEMS_FILE, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="No items found")
-    
-    return data["items"]
-'''
 
 class ItemsResponse(BaseModel):
     message: str
@@ -232,25 +212,6 @@ async def get_items(db: sqlite3.Connection = Depends(get_db)):
 
     return ItemsResponse(message="Items fetched successfully", items=items)
 
-
-'''
-@app.get("/items/{item_id}")
-async def get_item(item_id: int):
-    items = get_items_from_file()  # 商品一覧を取得
-
-    # item_idが範囲外の場合
-    if item_id < 1 or item_id > len(items):
-        raise HTTPException(status_code=404, detail="Item not found")
-
-    # item_id番目の商品情報を返す
-    item = items[item_id - 1]  # インデックスは0から始まるので1を引いて取得
-    return item
-
-class Item(BaseModel):
-    name: str
-    category: str
-    image_name: str = None # 画像のファイル名（オプション）
-'''
 
 class Item(BaseModel):
     id: int
@@ -292,36 +253,5 @@ def search_items(keyword: str = Query(..., min_length=1), db: sqlite3.Connection
     
     items = [dict(row) for row in cur.fetchall()]
     return SearchResponse(items=items)
-
-
-'''
-def insert_item(item: Item, db: sqlite3.Connection):
-    cur = db.cursor()
-    cur.execute(
-        "INSERT INTO items (name, category, image_name) VALUES (?, ?, ?)",
-        (item.name, item.category, item.image_name),
-    )
-    db.commit()
-
-    # STEP 4-2: add an implementation to store an item
-
-    ITEMS_FILE="items.json"
-
-    # JSONファイルを読み込む
-    try:
-        with open(ITEMS_FILE, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        # ファイルがない場合は新しく作成
-        data = {"items": []}
-    
-    # 新しいアイテムを追加
-    new_item = {"name": item.name, "category": item.category, "image_name": item.image_name}
-    data["items"].append(new_item)
-    
-    # ファイルに保存
-    with open(ITEMS_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-    '''
 
 
