@@ -11,6 +11,7 @@ import sqlite3
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from typing import List
+from typing import Optional
 
 
 # Define the path to the images & sqlite3 database
@@ -105,21 +106,24 @@ def hello():
 
 class AddItemResponse(BaseModel):
     message: str
-#<<<<<<< feature/step4
-    items: List[dict]  # itemsのリストを追加
-
-#=======
     id: int
-#>>>>>>> main
+    items: Optional[List[dict]] = None  
+    
+
+# Pydantic モデルを定義（FastAPI に JSON を正しく認識させる）
+class ItemRequest(BaseModel):
+    name: str
+    category: str
 
 # add_item is a handler to add a new item for POST /items .
 @app.post("/items", response_model=AddItemResponse)
 async def add_item(
     name: str = Form(...),
-    category: str =Form(...),
+    category: str = Form(...),
     image: UploadFile = File(...),
     db: sqlite3.Connection = Depends(get_db),
 ):
+
 
     # 入力チェック
     if not name or not category:
@@ -167,8 +171,7 @@ async def add_item(
 
     item_id = cur.lastrowid  #  追加したアイテムの `id` を取得
 
-    return AddItemResponse(message="Item added successfully", id=cur.lastrowid)
-
+    return AddItemResponse(message="Item added successfully", id=item_id)
 
 
 
