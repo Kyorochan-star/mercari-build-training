@@ -13,7 +13,7 @@ from contextlib import asynccontextmanager
 from typing import List
 from typing import Optional
 
-#8-2 GitHub Actionの確認
+# 8-2 GitHub Actionの確認
 
 # Define the path to the images & sqlite3 database
 images = pathlib.Path(__file__).parent.resolve() / "images"
@@ -173,22 +173,6 @@ async def add_item(
     item_id = cur.lastrowid  #  追加したアイテムの `id` を取得
 
     return AddItemResponse(message="Item added successfully", id=item_id)
-
-
-
-@app.get("/items",response_model=AddItemResponse)
-async def get_items():
-    ITEMS_FILE = "items.json"
-    
-    # JSONファイルを読み込む
-    try:
-        with open(ITEMS_FILE, "r") as f:
-            data = json.load(f)
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="No items found")
-    
-    return AddItemResponse(message="Items fetched successfully", items=data["items"])
-
 
 # get_image is a handler to return an image for GET /images/{filename} .
 @app.get("/image/{image_name}")
