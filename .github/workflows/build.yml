@@ -1,5 +1,5 @@
 name: build
-run-name: ${{ github.actor }} is building ${{ github.ref_name }} 🚀
+run-name: ${{ github.actor }} is building ${{ github.ref_name }} 
 on: [push]
 
 env:
@@ -40,7 +40,7 @@ jobs:
      - name: Build and push Docker image
        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
        with:
-       context: python
-       push: true
-       tags: ${{ steps.meta.outputs.tags }}
-       labels: ${{ steps.meta.outputs.labels }}
+        context: python
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
