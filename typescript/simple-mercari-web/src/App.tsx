@@ -7,7 +7,7 @@ function App() {
   // reload ItemList after Listing complete
   const [reload, setReload] = useState(true);
   return (
-    <div>
+    <div className='app'>
       <header className="Title">
         <p>
           <b>Simple Mercari</b>
