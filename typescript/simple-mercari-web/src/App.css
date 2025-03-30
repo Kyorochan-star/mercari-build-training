@@ -2,8 +2,21 @@
   text-align: center;
 }
 
+.app{
+  background-color: #F6F5ED;
+}
+
+.ItemListWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px; /* カードの間のスペース */
+  justify-content: center; /* 真ん中に寄せる */
+}
+
+
+
 .Title {
-  background-color: #222427;
+  background-color: #E72121;
   min-height: 8vh;
   display: flex;
   flex-direction: column;
@@ -11,29 +24,78 @@
   justify-content: left;
   font-size: calc(10px + 1vmin);
   color: white;
+  width: 300px;
 }
 
 .Listing {
-  background-color: #222427;
-  min-height: 8vh;
+  background-color: #FBFAF5;
+  margin: 2rem auto;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 600px;
+}
+
+.Listing form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: left;
-  font-size: calc(10px + 1vmin);
-  color: white;
+  gap: 5rem; /* ← 各要素間のスペース */
+}
+
+.Listing input[type="text"] {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 200px;
+  background-color: #f9f9f9;
+  color: #333;
+  margin: 3px;
+
+}
+.Listing input[type="file"]{
+  width: 500px;
+  margin: 3px;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.Listing button {
+  align-self: center; 
+  padding: 0.75rem 1.5rem;
+  background-color: #FFF5BE;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin: 3px;
+}
+
+.Listing button:hover {
+  background-color: #F9D134;
 }
 
 .ItemList {
-  background-color: #222427;
-  min-height: 8vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: left;
-  font-size: calc(10px + 1vmin);
-  color: white;
+  padding: 1rem;
+  background-color: #F5F5F5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  width: 200px;
+  color: #000000;
+  text-align: center;
 }
+
+.ItemList img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
 
 .App-link {
   color: #61dafb;

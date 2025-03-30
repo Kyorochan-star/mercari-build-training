@@ -12,14 +12,22 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from typing import List
 from typing import Optional
+import sys
+print("✅ print is working!", file=sys.stderr)
+
 
 # 8-2 GitHub Actionの確認
+logging.basicConfig(level=logging.INFO)
+logger=logging.getLogger(__name__)
+
 
 # Define the path to the images & sqlite3 database
 images = pathlib.Path(__file__).parent.resolve() / "images"
 
 db = pathlib.Path(__file__).parent.resolve() / "db" 
 DB_PATH = db / "mercari.sqlite3"  # `db` ディレクトリ内の `mercari.sqlite3`
+print("📁 現在の作業ディレクトリ:", os.getcwd(), file=sys.stderr)
+print("📄 DBファイル:", DB_PATH, file=sys.stderr)
 
 # ディレクトリがない場合は作成
 if not db.exists():
@@ -83,6 +91,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+@app.get("/debug-log")
+def debug_log():
+    print("🖨️ printが動きました！")
+    logger.info("📦 logger.info が動きました！")
+    return {"message": "Logged!"}
+
 logger = logging.getLogger("uvicorn")
 logger.level = logging.INFO
 images = pathlib.Path(__file__).parent.resolve() / "images"
@@ -116,6 +130,7 @@ class ItemRequest(BaseModel):
     name: str
     category: str
 
+
 # add_item is a handler to add a new item for POST /items .
 @app.post("/items", response_model=AddItemResponse)
 async def add_item(
@@ -124,7 +139,8 @@ async def add_item(
     image: UploadFile = File(...),
     db: sqlite3.Connection = Depends(get_db),
 ):
-
+    print("🚀 POST /items にリクエストが届いた！", flush=True)
+    
 
     # 入力チェック
     if not name or not category:

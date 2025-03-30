@@ -1,4 +1,6 @@
 const SERVER_URL = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:9000';
+console.log("✅ VITE_BACKEND_URL:", import.meta.env.VITE_BACKEND_URL);
+console.log("🌐 SERVER_URL:", SERVER_URL);
 
 export interface Item {
   id: number;
