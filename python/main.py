@@ -13,6 +13,7 @@ from contextlib import asynccontextmanager
 from typing import List
 from typing import Optional
 
+# 8-2 GitHub Actionの確認
 
 # Define the path to the images & sqlite3 database
 images = pathlib.Path(__file__).parent.resolve() / "images"
